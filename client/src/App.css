@@ -1,0 +1,62 @@
+body {
+  font-family: sans-serif;
+}
+
+.main {
+  display: flex;
+  gap: 100px;
+}
+
+DIV.content {
+  margin: 25px 0 0 25px
+}
+
+DIV.legend {
+  display: inline-block;
+  vertical-align: top;
+  margin-left: 10px;
+}
+
+DIV.legend-item {
+  margin: 10px 10px 0 10px;
+}
+
+DIV.legend-color {
+  display: inline-block;
+  width: 16px;
+}
+
+DIV.friend {
+  display: flex;
+  width: 160px;
+  justify-content: space-between;
+}
+
+DIV.friend button {
+  width: 200px;
+  border-radius: 5px;
+  border-width: 1px;
+}
+
+DIV.request {
+  margin-top: 10px;
+  margin-right: 400px;
+}
+
+BUTTON {
+  margin-right: 5px;
+}
+
+BUTTON.approve {
+  background-color: rgb(147, 249, 166);
+  border-color: rgb(36, 124, 52);
+}
+
+BUTTON.deny {
+  background-color: rgb(214, 89, 89);
+  border-color: rgb(39, 111, 142);
+}
+
+svg {
+  margin-top: 80px;
+}
