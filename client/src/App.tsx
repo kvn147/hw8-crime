@@ -105,12 +105,69 @@ export class App extends Component<{}, AppState> {
 
     // TODO (Task 3): make a fetch request to "/api/transactionStart"
     console.log(`remove this! just for pesky unused variable erros ${username} ${friend} ${amount} ${type}`)
+    const url = "/api/transactionStart";
+    const body = { username, friend, amount, type };
+  
+    fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: { 'Content-Type': 'application/json' }
+    })
+      .then(this.doSaveTransactionClick)
+      .then(this.doSaveSuccessClick)
+      .catch(this.doSaveError);
   }
 
+  doSaveTransactionClick = (): void => {
+    // This function is called after a transaction is successfully saved
+    // It will update the state to reflect the new transaction
+    if (this.state.page.kind === "transactions") {
+      this.setState({ 
+        page: {
+          kind: "transactions",
+          username: this.state.page.username,
+          balance: this.state.page.balance,
+          pendingRequests: this.state.page.pendingRequests
+        } 
+      });
+    }
+  }
+
+  doSaveSuccessClick = (): void => {
+    if (this.state.page.kind === "transactions") {
+      this.setState({ 
+        page: {
+          kind: "transactions",
+          username: this.state.page.username,
+          balance: this.state.page.balance,
+          pendingRequests: this.state.page.pendingRequests
+        } 
+      });
+    }
+  };
+
+  doSaveError = (err: unknown): void => {
+    if (err instanceof Error) {
+      console.error("Error saving transaction:", err);
+      alert("Error saving transaction: " + err.message);
+    } else {
+      console.error("Unknown error saving transaction:", err);
+      alert("Error saving transaction: " + String(err));
+    }
+    // If save failed from loading state, go back to login page
+    this.setState({ page: {kind: "login" }});
+  };
+  
   doTransactionCompleteClick = (username: string, friend: string,
     amount: number, accept: boolean): void => {
 
     // TODO (Task 4): make a fetch request to "/api/completeRequest"
     console.log(`remove this! just for pesky unused variable erros ${username} ${friend} ${amount} ${accept}`)
+    /*
+    fetch()
+      .then()
+      .then()
+      .catch()
+    */
   }
 }

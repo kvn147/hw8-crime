@@ -45,8 +45,13 @@ export class Transactions extends Component<TransactionProps, TransactionState> 
 
   componentDidUpdate = (prevProps: Readonly<TransactionProps>, _: Readonly<TransactionState>): void => {
     if (prevProps != this.props) {
-      this.setState({ balance: this.props.balance,
-        pendingRequests: this.props.pendingRequests});
+      this.setState({ 
+        balance: this.props.balance,
+        pendingRequests: this.props.pendingRequests,
+        username: this.props.username,
+        requestAmount: 0,
+        friend: ""
+      });
     }
   }
 
@@ -121,7 +126,7 @@ export class Transactions extends Component<TransactionProps, TransactionState> 
 
   doTransactionStartClick = (type: Transfer): void => {
     // TODO (Task 3): implement
-    console.log(`remove this! just for pesky unused variable erros ${type}`)
+    this.props.onTransactionStart(this.state.username, this.state.friend, this.state.requestAmount, type);
   }
 
   doTransactionCompleteClick = (friend: string, amount: number, accept: boolean): void => {
