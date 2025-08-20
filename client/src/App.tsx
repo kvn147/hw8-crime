@@ -104,36 +104,48 @@ export class App extends Component<{}, AppState> {
     amount: number, type: Transfer): void => {
 
     // TODO (Task 3): make a fetch request to "/api/transactionStart"
-    console.log(`remove this! just for pesky unused variable erros ${username} ${friend} ${amount} ${type}`)
     const url = "/api/transactionStart";
     const body = { username, friend, amount, type };
   
-    fetch(url, {
-      method: 'POST',
+    fetch(url, { method: 'POST',
       body: JSON.stringify(body),
       headers: { 'Content-Type': 'application/json' }
     })
-      .then(this.doSaveTransactionClick)
-      .then(this.doSaveSuccessClick)
-      .catch(this.doSaveError);
+      .then(this.doStartResp)
+      .catch(this.doStartError);
   }
 
-  doSaveTransactionClick = (): void => {
-    // This function is called after a transaction is successfully saved
-    // It will update the state to reflect the new transaction
-    if (this.state.page.kind === "transactions") {
-      this.setState({ 
-        page: {
-          kind: "transactions",
-          username: this.state.page.username,
-          balance: this.state.page.balance,
-          pendingRequests: this.state.page.pendingRequests
-        } 
-      });
+  doStartResp = (res: Response): void => {
+    if (res.status === 200) {
+      res.json()
+        .then(this.doStartJson)
+    } else if (res.status === 400) {
+      res.text().then(this.doStartError)
+        .catch(() => this.doStartError("Error parsing 400 response"));
+    } else {
+      this.doStartError("Bad status code");
     }
-  }
+  };
 
-  doSaveSuccessClick = (): void => {
+  doStartJson = (val: unknown): void => {
+    if (!isRecord(val)) {
+      throw new Error(`val is not a record: ${typeof val}`);
+    }
+    if (typeof val.username !== "string") {
+      throw new Error('Invalid username from /api/transactionStart');
+    }
+    if (typeof val.balance !== "number") {
+      throw new Error('Invalid balance from /api/transactionStart');
+    }
+    if (!Array.isArray(val.pendingRequests)) {
+      throw new Error('Invalid requests from /api/transactionStart');
+    }
+    for (const request of val.pendingRequests) {
+      if (typeof request.requester !== "string" ||
+        typeof request.amount !== "number") {
+        throw new Error('Invalid request from /api/transactionStart');
+      }
+    }
     if (this.state.page.kind === "transactions") {
       this.setState({ 
         page: {
@@ -146,7 +158,7 @@ export class App extends Component<{}, AppState> {
     }
   };
 
-  doSaveError = (err: unknown): void => {
+  doStartError = (err: unknown): void => {
     if (err instanceof Error) {
       console.error("Error saving transaction:", err);
       alert("Error saving transaction: " + err.message);
@@ -163,11 +175,67 @@ export class App extends Component<{}, AppState> {
 
     // TODO (Task 4): make a fetch request to "/api/completeRequest"
     console.log(`remove this! just for pesky unused variable erros ${username} ${friend} ${amount} ${accept}`)
-    /*
-    fetch()
-      .then()
-      .then()
-      .catch()
-    */
+    
+    const url = "/api/completeRequest";
+    const body = { username, friend, amount, accept };
+
+    fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: { 'Content-Type': 'application/json' }
+    })
+      .then(this.doCompleteResp)
+      .catch(this.doCompleteError);
   }
+
+  doCompleteResp = (res: Response): void => {
+    if (res.status === 200) {
+      res.json()
+        .then(this.doCompleteJson)
+    } else if (res.status === 400) {
+      res.text().then(this.doCompleteError).catch
+        (() => this.doCompleteError("Error parsing 400 response"));
+    } else {
+      throw new Error(`Unexpected status code: ${res.status}`);
+    }
+  }
+
+  doCompleteJson = (val: unknown): void => {
+    if (!isRecord(val)) {
+      throw new Error(`val is not a record: ${typeof val}`);
+    }
+    if (typeof val.username !== "string") {
+      throw new Error('Invalid username from /api/completeRequest');
+    }
+    if (typeof val.balance !== "number") {
+      throw new Error('Invalid balance from /api/completeRequest');
+    }
+    if (!Array.isArray(val.pendingRequests)) {
+      throw new Error('Invalid requests from /api/completeRequest');
+    }
+    for (const request of val.pendingRequests) {
+      if (typeof request.requester !== "string" ||
+        typeof request.amount !== "number") {
+        throw new Error('Invalid request from /api/completeRequest');
+      }
+    }
+    this.setState({ 
+      page: {
+        kind: "transactions",
+        username: val.username,
+        balance: val.balance,
+        pendingRequests: val.pendingRequests
+      }
+    });
+  };
+
+  doCompleteError = (err: unknown): void => {
+    if (err instanceof Error) {
+      console.error("Error completing transaction:", err.message);
+      alert("Error completing transaction: " + err.message);
+    } else {
+      console.error("Unknown error completing transaction:", err);
+      alert("Error completing transaction: " + String(err));
+    }
+  };
 }

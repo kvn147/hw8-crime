@@ -131,7 +131,7 @@ export class Transactions extends Component<TransactionProps, TransactionState> 
 
   doTransactionCompleteClick = (friend: string, amount: number, accept: boolean): void => {
     // TODO (Task 4): implement
-    console.log(`remove this! just for pesky unused variable erros ${friend} ${amount} ${accept}`)
+    this.props.onTransactionComplete(this.state.username, friend, amount, accept);
   }
 
   doLogOutClick = (): void => {
