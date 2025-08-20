@@ -119,6 +119,7 @@ export class App extends Component<{}, AppState> {
     if (res.status === 200) {
       res.json()
         .then(this.doStartJson)
+        .catch((e) => this.doStartError(`Error parsing 200 response. ${e}`));
     } else if (res.status === 400) {
       res.text().then(this.doStartError)
         .catch(() => this.doStartError("Error parsing 400 response"));
@@ -131,30 +132,26 @@ export class App extends Component<{}, AppState> {
     if (!isRecord(val)) {
       throw new Error(`val is not a record: ${typeof val}`);
     }
-    if (typeof val.username !== "string") {
-      throw new Error('Invalid username from /api/transactionStart');
+    const newBalance = val.newBalance;
+    let nextBalance = undefined;
+    if (typeof newBalance === "number") {
+      nextBalance = newBalance;
+    } else {
+      nextBalance = undefined
     }
-    if (typeof val.balance !== "number") {
+    if (typeof nextBalance !== "number") {
       throw new Error('Invalid balance from /api/transactionStart');
     }
-    if (!Array.isArray(val.pendingRequests)) {
-      throw new Error('Invalid requests from /api/transactionStart');
-    }
-    for (const request of val.pendingRequests) {
-      if (typeof request.requester !== "string" ||
-        typeof request.amount !== "number") {
-        throw new Error('Invalid request from /api/transactionStart');
-      }
-    }
+
     if (this.state.page.kind === "transactions") {
       this.setState({ 
         page: {
           kind: "transactions",
           username: this.state.page.username,
-          balance: this.state.page.balance,
+          balance: nextBalance,
           pendingRequests: this.state.page.pendingRequests
-        } 
-      });
+      } 
+    });
     }
   };
 
@@ -166,7 +163,6 @@ export class App extends Component<{}, AppState> {
       console.error("Unknown error saving transaction:", err);
       alert("Error saving transaction: " + String(err));
     }
-    // If save failed from loading state, go back to login page
     this.setState({ page: {kind: "login" }});
   };
   
@@ -174,8 +170,6 @@ export class App extends Component<{}, AppState> {
     amount: number, accept: boolean): void => {
 
     // TODO (Task 4): make a fetch request to "/api/completeRequest"
-    console.log(`remove this! just for pesky unused variable erros ${username} ${friend} ${amount} ${accept}`)
-    
     const url = "/api/completeRequest";
     const body = { username, friend, amount, accept };
 
@@ -192,6 +186,7 @@ export class App extends Component<{}, AppState> {
     if (res.status === 200) {
       res.json()
         .then(this.doCompleteJson)
+        .catch((e) => this.doCompleteError(`Error parsing 200 response. ${e}`));
     } else if (res.status === 400) {
       res.text().then(this.doCompleteError).catch
         (() => this.doCompleteError("Error parsing 400 response"));
@@ -204,10 +199,14 @@ export class App extends Component<{}, AppState> {
     if (!isRecord(val)) {
       throw new Error(`val is not a record: ${typeof val}`);
     }
-    if (typeof val.username !== "string") {
-      throw new Error('Invalid username from /api/completeRequest');
+    const newBalance = val.newBalance;
+    let nextBalance = undefined;
+    if (typeof newBalance === "number") {
+      nextBalance = newBalance;
+    } else {
+      nextBalance = undefined
     }
-    if (typeof val.balance !== "number") {
+    if (typeof nextBalance !== "number") {
       throw new Error('Invalid balance from /api/completeRequest');
     }
     if (!Array.isArray(val.pendingRequests)) {
@@ -219,14 +218,16 @@ export class App extends Component<{}, AppState> {
         throw new Error('Invalid request from /api/completeRequest');
       }
     }
-    this.setState({ 
-      page: {
-        kind: "transactions",
-        username: val.username,
-        balance: val.balance,
-        pendingRequests: val.pendingRequests
-      }
-    });
+    if (this.state.page.kind === "transactions") {
+      this.setState({ 
+        page: {
+          kind: "transactions",
+          username: this.state.page.username,
+          balance: nextBalance,
+          pendingRequests: val.pendingRequests
+        }
+      });
+    }
   };
 
   doCompleteError = (err: unknown): void => {

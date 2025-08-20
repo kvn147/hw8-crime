@@ -44,7 +44,7 @@ export class Transactions extends Component<TransactionProps, TransactionState> 
   }
 
   componentDidUpdate = (prevProps: Readonly<TransactionProps>, _: Readonly<TransactionState>): void => {
-    if (prevProps != this.props) {
+    if (prevProps !== this.props) {
       this.setState({ 
         balance: this.props.balance,
         pendingRequests: this.props.pendingRequests,
@@ -126,11 +126,27 @@ export class Transactions extends Component<TransactionProps, TransactionState> 
 
   doTransactionStartClick = (type: Transfer): void => {
     // TODO (Task 3): implement
+    if (!this.state.friend) {
+      alert("Friend must be non-empty");
+      return;
+    }
+    if (!(this.state.requestAmount >= 0)) {
+      alert("Amount must be a non-negative number");
+      return;
+    }
+    if (type === "send" && this.state.requestAmount > this.state.balance) {
+      alert("Insufficient balance to send");
+      return;
+    }
     this.props.onTransactionStart(this.state.username, this.state.friend, this.state.requestAmount, type);
   }
 
   doTransactionCompleteClick = (friend: string, amount: number, accept: boolean): void => {
     // TODO (Task 4): implement
+    if (accept && this.state.balance < amount) {
+      alert("Insufficient balance to accept request");
+      return;
+    }
     this.props.onTransactionComplete(this.state.username, friend, amount, accept);
   }
 
